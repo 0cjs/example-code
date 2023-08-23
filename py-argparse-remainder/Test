@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+ARGS='-a foo -1 -b -2 --cop -3'
+
+#   The above arguments are:
+#   • -a    for parseargs-remainder itself.
+#   • foo   the command that parseargs-remainder is conceptually going to run
+#   • -1 …  arguments not for parseargs-remainder but for the other command
+#
+#   Note how in the output in -K/known_args mode the -b option is consumed
+#   by parseargs-remainder rather than saved to be passed to the other
+#   command. Without `allow_abbrev=False` passed to ArgumentParser()
+#   the --cop argument would also be consumed as an abbreviation of --copt.
+
+echo "ARGS: $ARGS"
+for mode in -R -K; do
+    echo "───── $mode mode ──────"
+    "$(dirname "$0")/parse" $mode $ARGS
+done

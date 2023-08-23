@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+'''
+    parseargs-remainder - Demonstrate unique REMAINDER feature
+
+    This demonstrates the (apparent) loss of functionality with the
+    deprecation of `argparse.REMAINDER`. See the ``Test`` program
+    for example arguments demonstrating the problem.
+
+    This models a command written in Python that takes its own arguments,
+    another command (that it would presumably later run), and arguments
+    for that other command.
+
+    The first argument, ``-R`` or ``-K``, determines whether
+    `argparse.REMAINDER` or `argparse.ArgumentParser.parse_known_args()` is
+    used for the parsing.
+
+    References:
+    • https://stackoverflow.com/q/76956139/107294
+    • https://bugs.python.org/issue17050
+
+'''
+
+from   argparse  import ArgumentParser, REMAINDER
+import sys
+
+def die(exitcode, message, *formatargs):
+    print(message.format(*formatargs), file=sys.stderr)
+    exit(exitcode)
+
+def consume_mode(argv=sys.argv):
+    modes = { '-R': 'remainder', '-K': 'known_args' }
+    mode_args = modes.keys()
+
+    if len(argv) < 2 or argv[1] not in mode_args:
+        die(2, 'First argument must be one of: {}',
+            ', '.join(map(str, mode_args)))
+    return modes[argv.pop(1)]
+
+def main():
+    #   We cannot allow abbreviations here or even more arguments for
+    #   the other command will be consumed by this program!
+    p = ArgumentParser(allow_abbrev=False)
+    a = p.add_argument
+
+    #   Captialised letter options determine parsing mode of this program.
+    #   Lower case letter options are for this program.
+    #   Number options are always unknown to this program.
+    mode = consume_mode()
+    a('-a', '--aopt', action='store_true')
+    a('-b', '--bopt', action='store_true')
+    a('-c', '--copt', action='store_true')
+    a('COMMAND')
+
+    #   CMDARGS should not be parsed as options for this program.
+    if   mode == 'remainder':   a('CMDARGS', nargs=REMAINDER)
+    elif mode == 'known_args':  pass
+    else:                       die(3, 'Internal error')
+
+    if   mode == 'remainder':   args = p.parse_args(); other = []
+    elif mode == 'known_args':  args, other = p.parse_known_args()
+    else:                       die(3, 'Internal error')
+
+    print('mode:', mode)
+    print('args:', args)
+    print('rest:', other)
+
+if __name__ == '__main__':
+    exit(main())
