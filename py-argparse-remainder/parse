@@ -17,6 +17,12 @@
     References:
     • https://stackoverflow.com/q/76956139/107294
     • https://bugs.python.org/issue17050
+    • https://bugs.python.org/issue9334
+
+    Possibly the real issue here is that one should use `optparse` instead
+    for simple cases where one wants two sets of command arguments/options.
+    Anders Kaseorg suggests that "the documentation incorrectly discourages
+    [optparse] use": https://bugs.python.org/issue9334#msg410445
 
 '''
 
